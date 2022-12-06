@@ -1,24 +1,22 @@
-image: docker:20.10.16
-
-variables:
-  DOCKER_TLS_CERTDIR: "/certs"
-
-services:
-  - docker:20.10.16-dind
-  
-stages:          # List of stages for jobs, and their order of execution
-  - build
-
-build-job:       # This job runs in the build stage, which runs first.
+docker-build:
+  image: docker:latest
   stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY/$CI_REGISTRY_USER/zeus:$CI_COMMIT_REF_SLUG .
-    - docker push $CI_REGISTRY/sincorchetes/zeus:$CI_COMMIT_REF_SLUG
-
-#deploy-job:      # This job runs in the deploy stage.
-#  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
-#  environment: production
-#  script:
-#    - echo "Deploying application..."
-#    - echo "Application successfully deployed."
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag=""
+        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
+      else
+        tag=":$CI_COMMIT_REF_SLUG"
+        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      fi
+    - docker build --pull -t "$CI_REGISTRY_IMAGE${tag}" .
+    - docker push "$CI_REGISTRY_IMAGE${tag}"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - Dockerfile
