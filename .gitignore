@@ -3,3 +3,6 @@
 .pydata
 *pycache*
 .pytest_cache
+*.egg*
+*.pyc
+*.pyo
