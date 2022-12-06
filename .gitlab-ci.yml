@@ -14,7 +14,7 @@ build-job:       # This job runs in the build stage, which runs first.
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY/$CI_REGISTRY_USER/zeus:$CI_COMMIT_REF_SLUG .
-    - docker push $CI_REGISTRY/$CI_REGISTRY_USER/zeus:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY/sincorchetes/zeus:$CI_COMMIT_REF_SLUG
 
 #deploy-job:      # This job runs in the deploy stage.
 #  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
